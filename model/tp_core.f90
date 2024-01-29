@@ -4,7 +4,7 @@ module tp_core
 !
 ! reference https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere/blob/main/model/tp_core.F90
 !========================================================================
-
+use fv_arrays, only: R_GRID
  implicit none
 
  private
@@ -51,45 +51,41 @@ module tp_core
 !-----------------------------------------------------------------------
 contains
 
-subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy, dxa, bounded_domain, grid_type, lim_fac)
- integer, INTENT(IN) :: is, ie, isd, ied, jsd, jed
- integer, INTENT(IN) :: jfirst, jlast  ! compute domain
+subroutine xppm(flux, q, c, iord, is, ie, isd, ied, npx, lim_fac)
+ integer, INTENT(IN) :: is, ie, isd, ied
  integer, INTENT(IN) :: iord
- integer, INTENT(IN) :: npx, npy
- real   , INTENT(IN) :: q(isd:ied,jfirst:jlast)
- real   , INTENT(IN) :: c(is:ie+1,jfirst:jlast) ! Courant   N (like FLUX)
- real   , intent(IN) :: dxa(isd:ied,jsd:jed)
- logical, intent(IN) :: bounded_domain
- integer, intent(IN) :: grid_type
- real   , intent(IN) :: lim_fac
+ integer, INTENT(IN) :: npx
+ real(R_GRID)   , INTENT(IN) :: q(isd:ied)
+ real(R_GRID)   , INTENT(IN) :: c(is:ie+1) ! Courant   N (like FLUX)
+ !real   , intent(IN) :: dxa(isd:ied)
+ real(R_GRID)   , intent(IN) :: lim_fac
 ! !OUTPUT PARAMETERS:
- real  , INTENT(OUT) :: flux(is:ie+1,jfirst:jlast) !  Flux
+ real(R_GRID)  , INTENT(OUT) :: flux(is:ie+1) !  Flux
 ! Local
- real, dimension(is-1:ie+1):: bl, br, b0, a4, da1
- real:: q1(isd:ied)
- real, dimension(is:ie+1):: fx0, fx1, xt1
+ real(R_GRID), dimension(is-1:ie+1):: bl, br, b0, a4, da1
+ real(R_GRID):: q1(isd:ied)
+ real(R_GRID), dimension(is:ie+1):: fx0, fx1, xt1
  logical, dimension(is-1:ie+1):: ext5, ext6, smt5, smt6
  logical, dimension(is:ie+1):: hi5, hi6
- real  al(is-1:ie+2)
- real  dm(is-2:ie+2)
- real  dq(is-3:ie+2)
+ real(R_GRID)  al(is-1:ie+2)
+ real(R_GRID)  dm(is-2:ie+2)
+ real (R_GRID) dq(is-3:ie+2)
  integer:: i, j, ie3, is1, ie1, mord
- real:: x0, x1, xt, qtmp, pmp_1, lac_1, pmp_2, lac_2
+ real(R_GRID):: x0, x1, xt, qtmp, pmp_1, lac_1, pmp_2, lac_2
 
- if ( .not. bounded_domain .and. grid_type<3 ) then
-    is1 = max(3,is-1);  ie3 = min(npx-2,ie+2)
-                        ie1 = min(npx-3,ie+1)
- else
+ !if ( .not. bounded_domain .and. grid_type<3 ) then
+ !   is1 = max(3,is-1);  ie3 = min(npx-2,ie+2)
+ !                       ie1 = min(npx-3,ie+1)
+ !else
     is1 = is-1;         ie3 = ie+2
                         ie1 = ie+1
- end if
+ !end if
 
  mord = abs(iord)
 
- do 666 j=jfirst,jlast
 
     do i=isd, ied
-       q1(i) = q(i,j)
+       q1(i) = q(i)
     enddo
 
  if ( iord < 7 ) then
@@ -100,20 +96,20 @@ subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy,
       al(i) = p1*(q1(i-1)+q1(i)) + p2*(q1(i-2)+q1(i+1))
    enddo
 
-   if ( .not.bounded_domain .and. grid_type<3 ) then
-     if ( is==1 ) then
-       al(0) = c1*q1(-2) + c2*q1(-1) + c3*q1(0)
-       al(1) = 0.5*(((2.*dxa(0,j)+dxa(-1,j))*q1(0)-dxa(0,j)*q1(-1))/(dxa(-1,j)+dxa(0,j)) &
-             +      ((2.*dxa(1,j)+dxa( 2,j))*q1(1)-dxa(1,j)*q1( 2))/(dxa(1, j)+dxa(2,j)))
-       al(2) = c3*q1(1) + c2*q1(2) +c1*q1(3)
-     endif
-     if ( (ie+1)==npx ) then
-       al(npx-1) = c1*q1(npx-3) + c2*q1(npx-2) + c3*q1(npx-1)
-       al(npx) = 0.5*(((2.*dxa(npx-1,j)+dxa(npx-2,j))*q1(npx-1)-dxa(npx-1,j)*q1(npx-2))/(dxa(npx-2,j)+dxa(npx-1,j)) &
-               +      ((2.*dxa(npx,  j)+dxa(npx+1,j))*q1(npx  )-dxa(npx,  j)*q1(npx+1))/(dxa(npx,  j)+dxa(npx+1,j)))
-       al(npx+1) = c3*q1(npx) + c2*q1(npx+1) + c1*q1(npx+2)
-     endif
-   endif
+   !if ( .not.bounded_domain .and. grid_type<3 ) then
+   !  if ( is==1 ) then
+   !    al(0) = c1*q1(-2) + c2*q1(-1) + c3*q1(0)
+   !    al(1) = 0.5*(((2.*dxa(0,j)+dxa(-1,j))*q1(0)-dxa(0,j)*q1(-1))/(dxa(-1,j)+dxa(0,j)) &
+   !          +      ((2.*dxa(1,j)+dxa( 2,j))*q1(1)-dxa(1,j)*q1( 2))/(dxa(1, j)+dxa(2,j)))
+   !    al(2) = c3*q1(1) + c2*q1(2) +c1*q1(3)
+   !  endif
+   !  if ( (ie+1)==npx ) then
+   !    al(npx-1) = c1*q1(npx-3) + c2*q1(npx-2) + c3*q1(npx-1)
+   !    al(npx) = 0.5*(((2.*dxa(npx-1,j)+dxa(npx-2,j))*q1(npx-1)-dxa(npx-1,j)*q1(npx-2))/(dxa(npx-2,j)+dxa(npx-1,j)) &
+   !            +      ((2.*dxa(npx,  j)+dxa(npx+1,j))*q1(npx  )-dxa(npx,  j)*q1(npx+1))/(dxa(npx,  j)+dxa(npx+1,j)))
+   !    al(npx+1) = c3*q1(npx) + c2*q1(npx+1) + c1*q1(npx+2)
+   !  endif
+   !endif
 
    if ( iord<0 ) then
        do i=is-1, ie+2
@@ -130,26 +126,26 @@ subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy,
         enddo
 
       do i=is,ie+1
-         if ( c(i,j) > 0. ) then
-             fx1(i) = (1.-c(i,j))*(br(i-1) - c(i,j)*b0(i-1))
-             flux(i,j) = q1(i-1)
+         if ( c(i) > 0. ) then
+             fx1(i) = (1.-c(i))*(br(i-1) - c(i)*b0(i-1))
+             flux(i) = q1(i-1)
          else
-             fx1(i) = (1.+c(i,j))*(bl(i) + c(i,j)*b0(i))
-             flux(i,j) = q1(i)
+             fx1(i) = (1.+c(i))*(bl(i) + c(i)*b0(i))
+             flux(i) = q1(i)
          endif
-         if (smt5(i-1).or.smt5(i)) flux(i,j) = flux(i,j) + fx1(i)
+         if (smt5(i-1).or.smt5(i)) flux(i) = flux(i) + fx1(i)
       enddo
 
    elseif ( mord==2 ) then  ! perfectly linear scheme
 
       do i=is,ie+1
-         xt = c(i,j)
+         xt = c(i)
          if ( xt > 0. ) then
               qtmp = q1(i-1)
-              flux(i,j) = qtmp + (1.-xt)*(al(i)-qtmp-xt*(al(i-1)+al(i)-(qtmp+qtmp)))
+              flux(i) = qtmp + (1.-xt)*(al(i)-qtmp-xt*(al(i-1)+al(i)-(qtmp+qtmp)))
          else
               qtmp = q1(i)
-              flux(i,j) = qtmp + (1.+xt)*(al(i)-qtmp+xt*(al(i)+al(i+1)-(qtmp+qtmp)))
+              flux(i) = qtmp + (1.+xt)*(al(i)-qtmp+xt*(al(i)+al(i+1)-(qtmp+qtmp)))
          endif
 !        x0 = sign(dim(xt, 0.), 1.)
 !        x1 = sign(dim(0., xt), 1.)
@@ -169,18 +165,18 @@ subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy,
            smt6(i) = 3.*x0 < xt
         enddo
         do i=is,ie+1
-           xt1(i) = c(i,j)
+           xt1(i) = c(i)
            if ( xt1(i) > 0. ) then
                if ( smt5(i-1) .or. smt6(i) ) then
-                    flux(i,j) = q1(i-1) + (1.-xt1(i))*(br(i-1) - xt1(i)*b0(i-1))
+                    flux(i) = q1(i-1) + (1.-xt1(i))*(br(i-1) - xt1(i)*b0(i-1))
                else
-                    flux(i,j) = q1(i-1)
+                    flux(i) = q1(i-1)
                endif
            else
                if ( smt6(i-1) .or. smt5(i) ) then
-                    flux(i,j) = q1(i) + (1.+xt1(i))*(bl(i) + xt1(i)*b0(i))
+                    flux(i) = q1(i) + (1.+xt1(i))*(bl(i) + xt1(i)*b0(i))
                else
-                    flux(i,j) = q1(i)
+                    flux(i) = q1(i)
                endif
            endif
         enddo
@@ -197,7 +193,7 @@ subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy,
            smt6(i) = 3.*x0 < xt
         enddo
         do i=is,ie+1
-           xt1(i) = c(i,j)
+           xt1(i) = c(i)
            hi5(i) = smt5(i-1) .and. smt5(i)   ! more diffusive
            hi6(i) = smt6(i-1) .or.  smt6(i)
            hi5(i) = hi5(i) .or. hi6(i)
@@ -207,12 +203,12 @@ subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy,
 ! Low-order only if (ext6(i-1).and.ext6(i)) .AND. ext5(i1).or.ext5(i)()
           if ( xt1(i) > 0. ) then
                fx1(i) = (1.-xt1(i))*(br(i-1) - xt1(i)*b0(i-1))
-               flux(i,j) = q1(i-1)
+               flux(i) = q1(i-1)
            else
                fx1(i) = (1.+xt1(i))*(bl(i) + xt1(i)*b0(i))
-               flux(i,j) = q1(i)
+               flux(i) = q1(i)
            endif
-           if ( hi5(i) ) flux(i,j) = flux(i,j) + fx1(i)
+           if ( hi5(i) ) flux(i) = flux(i) + fx1(i)
         enddo
 
    else
@@ -260,18 +256,17 @@ subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy,
       endif
 
       do i=is,ie+1
-         if ( c(i,j) > 0. ) then
-              fx1(i) = (1.-c(i,j))*(br(i-1) - c(i,j)*b0(i-1))
-              flux(i,j) = q1(i-1)
+         if ( c(i) > 0. ) then
+              fx1(i) = (1.-c(i))*(br(i-1) - c(i)*b0(i-1))
+              flux(i) = q1(i-1)
          else
-              fx1(i) = (1.+c(i,j))*(bl(i) + c(i,j)*b0(i))
-              flux(i,j) = q1(i)
+              fx1(i) = (1.+c(i))*(bl(i) + c(i)*b0(i))
+              flux(i) = q1(i)
          endif
-         if (smt5(i-1).or.smt5(i)) flux(i,j) = flux(i,j) + fx1(i)
+         if (smt5(i-1).or.smt5(i)) flux(i) = flux(i) + fx1(i)
       enddo
 
    endif
-   goto 666
 
  else
 
@@ -351,47 +346,47 @@ subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy,
        enddo
     endif
 ! Positive definite constraint:
-    !if(iord==9 .or. iord==13) call pert_ppm(ie1-is1+1, q1(is1), bl(is1), br(is1), 0)
+    if(iord==9 .or. iord==13) call pert_ppm(ie1-is1+1, q1(is1), bl(is1), br(is1), 0)
 
-    if (.not. bounded_domain .and. grid_type<3) then
-      if ( is==1 ) then
-         bl(0) = s14*dm(-1) + s11*(q1(-1)-q1(0))
+    !if (.not. bounded_domain .and. grid_type<3) then
+    !  if ( is==1 ) then
+    !     bl(0) = s14*dm(-1) + s11*(q1(-1)-q1(0))
 
-         xt = 0.5*(((2.*dxa(0,j)+dxa(-1,j))*q1(0)-dxa(0,j)*q1(-1))/(dxa(-1,j)+dxa(0,j)) &
-            +      ((2.*dxa(1,j)+dxa( 2,j))*q1(1)-dxa(1,j)*q1( 2))/(dxa(1, j)+dxa(2,j)))
-!        if ( iord==8 .or. iord==10 ) then
-            xt = max(xt, min(q1(-1),q1(0),q1(1),q1(2)))
-            xt = min(xt, max(q1(-1),q1(0),q1(1),q1(2)))
+    !     xt = 0.5*(((2.*dxa(0,j)+dxa(-1,j))*q1(0)-dxa(0,j)*q1(-1))/(dxa(-1,j)+dxa(0,j)) &
+    !        +      ((2.*dxa(1,j)+dxa( 2,j))*q1(1)-dxa(1,j)*q1( 2))/(dxa(1, j)+dxa(2,j)))
+!   !     if ( iord==8 .or. iord==10 ) then
+    !        xt = max(xt, min(q1(-1),q1(0),q1(1),q1(2)))
+    !        xt = min(xt, max(q1(-1),q1(0),q1(1),q1(2)))
 !        endif
-         br(0) = xt - q1(0)
-         bl(1) = xt - q1(1)
-         xt = s15*q1(1) + s11*q1(2) - s14*dm(2)
-         br(1) = xt - q1(1)
-         bl(2) = xt - q1(2)
+    !     br(0) = xt - q1(0)
+    !     bl(1) = xt - q1(1)
+    !     xt = s15*q1(1) + s11*q1(2) - s14*dm(2)
+    !     br(1) = xt - q1(1)
+    !     bl(2) = xt - q1(2)
 
-         br(2) = al(3) - q1(2)
-         !call pert_ppm(3, q1(0), bl(0), br(0), 1)
-      endif
-      if ( (ie+1)==npx ) then
-         bl(npx-2) = al(npx-2) - q1(npx-2)
+    !     br(2) = al(3) - q1(2)
+    !     call pert_ppm(3, q1(0), bl(0), br(0), 1)
+    !  endif
+    !  if ( (ie+1)==npx ) then
+    !     bl(npx-2) = al(npx-2) - q1(npx-2)
+    !
+    !    xt = s15*q1(npx-1) + s11*q1(npx-2) + s14*dm(npx-2)
+    !    br(npx-2) = xt - q1(npx-2)
+    !    bl(npx-1) = xt - q1(npx-1)
 
-         xt = s15*q1(npx-1) + s11*q1(npx-2) + s14*dm(npx-2)
-         br(npx-2) = xt - q1(npx-2)
-         bl(npx-1) = xt - q1(npx-1)
-
-         xt = 0.5*(((2.*dxa(npx-1,j)+dxa(npx-2,j))*q1(npx-1)-dxa(npx-1,j)*q1(npx-2))/(dxa(npx-2,j)+dxa(npx-1,j)) &
-            +      ((2.*dxa(npx,  j)+dxa(npx+1,j))*q1(npx  )-dxa(npx,  j)*q1(npx+1))/(dxa(npx,  j)+dxa(npx+1,j)))
+    !    xt = 0.5*(((2.*dxa(npx-1,j)+dxa(npx-2,j))*q1(npx-1)-dxa(npx-1,j)*q1(npx-2))/(dxa(npx-2,j)+dxa(npx-1,j)) &
+    !       +      ((2.*dxa(npx,  j)+dxa(npx+1,j))*q1(npx  )-dxa(npx,  j)*q1(npx+1))/(dxa(npx,  j)+dxa(npx+1,j)))
 !        if ( iord==8 .or. iord==10 ) then
-            xt = max(xt, min(q1(npx-2),q1(npx-1),q1(npx),q1(npx+1)))
-            xt = min(xt, max(q1(npx-2),q1(npx-1),q1(npx),q1(npx+1)))
+    !       xt = max(xt, min(q1(npx-2),q1(npx-1),q1(npx),q1(npx+1)))
+    !!       xt = min(xt, max(q1(npx-2),q1(npx-1),q1(npx),q1(npx+1)))
 !        endif
-         br(npx-1) = xt - q1(npx-1)
-         bl(npx  ) = xt - q1(npx  )
+    !     br(npx-1) = xt - q1(npx-1)
+    !     bl(npx  ) = xt - q1(npx  )
 
-         br(npx) = s11*(q1(npx+1)-q1(npx)) - s14*dm(npx+1)
-         !call pert_ppm(3, q1(npx-2), bl(npx-2), br(npx-2), 1)
-      endif
-    endif
+    !     br(npx) = s11*(q1(npx+1)-q1(npx)) - s14*dm(npx+1)
+    !     call pert_ppm(3, q1(npx-2), bl(npx-2), br(npx-2), 1)
+    !  endif
+    !endif
 
   endif
 
@@ -401,26 +396,87 @@ subroutine xppm(flux, q, c, iord, is,ie,isd,ied, jfirst,jlast,jsd,jed, npx, npy,
          smt5(i) = bl(i) * br(i) < 0.
       enddo
       do i=is,ie+1
-         if ( c(i,j) > 0. ) then
-              fx1(i) = (1.-c(i,j))*(br(i-1) - c(i,j)*b0(i-1))
-              flux(i,j) = q1(i-1)
+         if ( c(i) > 0. ) then
+              fx1(i) = (1.-c(i))*(br(i-1) - c(i)*b0(i-1))
+              flux(i) = q1(i-1)
          else
-              fx1(i) = (1.+c(i,j))*(bl(i) + c(i,j)*b0(i))
-              flux(i,j) = q1(i)
+              fx1(i) = (1.+c(i))*(bl(i) + c(i)*b0(i))
+              flux(i) = q1(i)
          endif
-         if ( smt5(i-1).or.smt5(i) ) flux(i,j) = flux(i,j) + fx1(i)
+         if ( smt5(i-1).or.smt5(i) ) flux(i) = flux(i) + fx1(i)
       enddo
   else
       do i=is,ie+1
-         if( c(i,j)>0. ) then
-             flux(i,j) = q1(i-1) + (1.-c(i,j))*(br(i-1)-c(i,j)*(bl(i-1)+br(i-1)))
+         if( c(i)>0. ) then
+             flux(i) = q1(i-1) + (1.-c(i))*(br(i-1)-c(i)*(bl(i-1)+br(i-1)))
          else
-             flux(i,j) = q1(i  ) + (1.+c(i,j))*(bl(i  )+c(i,j)*(bl(i)+br(i)))
+             flux(i) = q1(i  ) + (1.+c(i))*(bl(i  )+c(i)*(bl(i)+br(i)))
          endif
       enddo
   endif
 
-666   continue
-
  end subroutine xppm
+
+
+
+
+ subroutine pert_ppm(im, a0, al, ar, iv)
+ integer, intent(in):: im
+ integer, intent(in):: iv
+ real(R_GRID), intent(in)   :: a0(im)
+ real(R_GRID), intent(inout):: al(im), ar(im)
+! Local:
+ real(R_GRID) a4, da1, da2, a6da, fmin
+ integer i
+
+!-----------------------------------
+! Optimized PPM in perturbation form:
+!-----------------------------------
+
+ if ( iv==0 ) then
+! Positive definite constraint
+    do i=1,im
+     if ( a0(i) <= 0. ) then
+          al(i) = 0.
+          ar(i) = 0.
+     else
+        a4 = -3.*(ar(i) + al(i))
+       da1 =      ar(i) - al(i)
+      if( abs(da1) < -a4 ) then
+         fmin = a0(i) + 0.25/a4*da1**2 + a4*r12
+         if( fmin < 0. ) then
+             if( ar(i)>0. .and. al(i)>0. ) then
+                 ar(i) = 0.
+                 al(i) = 0.
+             elseif( da1 > 0. ) then
+                 ar(i) = -2.*al(i)
+             else
+                 al(i) = -2.*ar(i)
+             endif
+         endif
+      endif
+     endif
+    enddo
+ else
+! Standard PPM constraint
+    do i=1,im
+       if ( al(i)*ar(i) < 0. ) then
+            da1 = al(i) - ar(i)
+            da2 = da1**2
+            a6da = 3.*(al(i)+ar(i))*da1
+! abs(a6da) > da2 --> 3.*abs(al+ar) > abs(al-ar)
+            if( a6da < -da2 ) then
+                ar(i) = -2.*al(i)
+            elseif( a6da > da2 ) then
+                al(i) = -2.*ar(i)
+            endif
+       else
+! effect of dm=0 included here
+            al(i) = 0.
+            ar(i) = 0.
+       endif
+  enddo
+ endif
+
+ end subroutine pert_ppm
 end module tp_core 

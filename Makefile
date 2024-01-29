@@ -11,10 +11,11 @@ IMOD=-Ibin
 
 #Objects
 OBJ=bin/fv_arrays.obj \
+bin/fv_control.obj \
+bin/test_cases.obj \
 bin/tp_core.obj \
 bin/dyn_core.obj \
 bin/atmosphere.obj \
-
 
 #Compile and build all
 all: header config bin/main ending
@@ -37,28 +38,38 @@ config:
 	. sh/dirs.sh
 
 #fv_arrays
-bin/fv_arrays.obj: src/fv_arrays.f90
+bin/fv_arrays.obj: model/fv_arrays.f90
 	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
 	mv fv_arrays.mod bin/.
 
+#fv_control
+bin/fv_control.obj: tools/fv_control.f90
+	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
+	mv fv_control.mod bin/.
+
+#test_cases
+bin/test_cases.obj: tools/test_cases.f90
+	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
+	mv test_cases.mod bin/.
+
 #tp_core
-bin/tp_core.obj: src/tp_core.f90
+bin/tp_core.obj: model/tp_core.f90
 	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
 	mv tp_core.mod bin/.
 
 #dyn_core
-bin/dyn_core.obj: src/dyn_core.f90
+bin/dyn_core.obj: model/dyn_core.f90
 	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
 	mv dyn_core.mod bin/.
 	
 #atmosphere
-bin/atmosphere.obj: src/atmosphere.f90
+bin/atmosphere.obj: driver/atmosphere.f90
 	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
 	mv atmosphere.mod bin/.
 	
 #Main executable
-bin/main: src/main.f90 $(OBJ)
-	$(F90) $(FFLAG)  src/main.f90 $(OBJ) -o $@ $(IMOD)
+bin/main: main.f90 $(OBJ)
+	$(F90) $(FFLAG)  main.f90 $(OBJ) -o $@ $(IMOD)
 
 #Creates a link for executable and prints ending
 ending: 
