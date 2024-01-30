@@ -169,8 +169,8 @@ subroutine atmosphere_end(atm)
    write(iunit,*) atm%l1_error_qa
    write(iunit,*) atm%l2_error_qa
    close(iunit)
-
-   print*, atm%linf_error_qa, atm%l1_error_qa, atm%l2_error_qa, atm%cfl
+   print '(a33, 3e16.8)','(linf, l1, l2) error norms:', &
+   atm%linf_error_qa, atm%l1_error_qa, atm%l2_error_qa
    print*,'------------------------------------------------------------------'
 end subroutine atmosphere_end
 
