@@ -2,7 +2,7 @@ module atmosphere
 !========================================================================
 !========================================================================
 use fv_control, only: init_model
-use fv_arrays , only: fv_atmos_type, datadir, pardir, R_GRID
+use fv_arrays , only: fv_atmos_type, datadir, pardir, R_GRID, day2sec, sec2day
 use test_cases, only: init_case
 use dyn_core  , only: dy_core
 
@@ -113,7 +113,7 @@ subroutine atmosphere_output(atm, step, total_tsteps)
       ! write the q data in a text file
       iunit = 19
       open(iunit, file=filename, status='replace')
-      write(iunit,*) atm%time
+      write(iunit,*) atm%time*sec2day
       write(iunit,*) atm%mass_qa_var
       write(iunit,*) atm%cfl
       do i = is, ie
@@ -217,7 +217,7 @@ subroutine atmosphere_input(atm)
     print*,"nplots     :", atm%nplots
 
     ! Time vars
-    atm%Tf   = 5.d0
+    atm%Tf   = 12.d0 * day2sec
     atm%dto2 = atm%dt*0.5d0
     atm%total_tsteps  = int(atm%Tf/atm%dt)
     atm%plotstep = atm%total_tsteps/atm%nplots

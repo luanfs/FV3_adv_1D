@@ -6,7 +6,7 @@ module test_cases
 ! https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere/blob/main/tools/test_cases.F90
 !========================================================================
 use fv_arrays,  only: fv_grid_bounds_type, fv_grid_type, fv_atmos_type, &
-                      point_structure, R_GRID, pi
+                      point_structure, R_GRID, pi, erad, eradi, day2sec
 implicit none
 
 contains
@@ -30,7 +30,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
    type(fv_grid_bounds_type), intent(IN) :: bd
    type(point_structure), pointer, dimension(:) :: agrid
    real(R_GRID), intent(OUT) :: qa(bd%isd:bd%ied)
-   real(R_GRID) :: x
+   real(R_GRID) :: x, c
    integer, intent(IN) :: test_case
    integer :: is, ie
    integer :: i
@@ -40,20 +40,21 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
  
    agrid => gridstruct%agrid
 
-   if (test_case == 1) then
+   if (test_case==1) then
       do i = is, ie
          x = agrid(i)%x
-         if (x<=0.4d0 .or. x>0.6d0) then
+         c = 2d0*pi*erad
+         if (x<=0.4*c .or. x>=0.6d0*c) then
             qa(i) = 0.d0
          else
             qa(i) = 1.d0
          endif
       enddo
 
-   else if (test_case == 2 .or. test_case==3) then
+   else if (test_case==2 .or. test_case==3) then
       do i = is, ie
          x = agrid(i)%x
-         qa(i) = 0.d0 + 1.d0* dexp(-10*(dcos(pi*x))**2)
+         qa(i) = 0.d0 + 1.d0* dexp(-10*(dcos(x*0.5d0*eradi))**2)
       enddo
    else
 
@@ -108,17 +109,19 @@ subroutine compute_wind(uc, x, t, test_case)
    real(R_GRID), intent(OUT) :: uc
    real(R_GRID), intent(IN)  :: x, t
    integer, intent(IN) :: test_case
-   real(R_GRID) :: Tf, u0, u1
+   real(R_GRID) :: Tf, u0, u1, x1, c
 
+   Tf = 12.d0*day2sec
    select case (test_case)
       case(1,2)
-         uc = 0.2d0
+         uc = 2d0*pi*erad/Tf
 
       case(3)
-         Tf = 5
-         u0 = 0.2
-         u1 = 0.2
-         uc = u0*dsin(pi*(x-t/Tf))**2*dcos(pi*t/Tf) + u1
+         c = 2d0*pi*erad/Tf
+         u0 = c
+         u1 = c
+         x1 = x/(2d0*pi*erad)
+         uc = u0*dsin(pi*(x1-t/Tf))**2*dcos(pi*t/Tf) + u1
 
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case

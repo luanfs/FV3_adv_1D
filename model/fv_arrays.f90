@@ -9,6 +9,10 @@ public
 integer, public, parameter :: R_GRID = selected_real_kind(12,100)
 real(R_GRID), public, parameter :: pio4 = datan(1.d0)
 real(R_GRID), public, parameter :: pi = 4.d0*pio4
+real(R_GRID), public, parameter :: erad = 6.37122e6
+real(R_GRID), public, parameter :: eradi = 1.d0/erad
+real(R_GRID), public, parameter :: day2sec = 86400.d0
+real(R_GRID), public, parameter :: sec2day = 1.d0/day2sec
 character(len=32) :: datadir = "data/"
 character(len=32) :: pardir = "par/"
 

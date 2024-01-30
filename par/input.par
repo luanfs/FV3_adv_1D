@@ -4,13 +4,13 @@
 # N (number of cells)
 1536
 #Time step
-0.00125
+225.0
 #hord scheme
 9
 #Departure point scheme (1 (rk1) or 2 (rk2))
 2
 # Number of plots
-10
+12
 #-----------Description of parameters -------------------------------------
 #Test case
 1 - Advection of a square wave  using constant wind 

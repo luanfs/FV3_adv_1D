@@ -50,6 +50,7 @@ subroutine dy_core(qa, uc, uc_old, bd, gridstruct, time, time_centered, dt, dto2
    uc_old(isd:is-1) = uc_old(ie-ng+1:ie)
    uc_old(ie+2:ied) = uc_old(is+1:is+1+ng-1)
 
+   ! compute time averaged cfl
    call time_averaged_cfl(gridstruct, bd, crx_adv, uc_old, uc, dp, dt)
 
    ! compute adv coeffs

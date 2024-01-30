@@ -9,11 +9,11 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 384 # number of cells
+N    = 48 # number of cells
 tc   = 3  # test case
 hord = 8  # advection scheme
 dp   = 2  # departure point scheme
-nplots = 11
+nplots = 13
 
 # basename for plotting
 basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_dp"+str(dp)+"_t"
