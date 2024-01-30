@@ -12,6 +12,7 @@ IMOD=-Ibin
 #Objects
 OBJ=bin/fv_arrays.obj \
 bin/fv_control.obj \
+bin/fv_duogrid.obj \
 bin/test_cases.obj \
 bin/tp_core.obj \
 bin/sw_core.obj \
@@ -47,6 +48,11 @@ bin/fv_arrays.obj: model/fv_arrays.f90
 bin/fv_control.obj: tools/fv_control.f90
 	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
 	mv fv_control.mod bin/.
+
+#fv_duogrid
+bin/fv_duogrid.obj: tools/fv_duogrid.f90
+	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
+	mv fv_duogrid.mod bin/.
 
 #test_cases
 bin/test_cases.obj: tools/test_cases.f90

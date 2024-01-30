@@ -8,6 +8,8 @@ use fv_arrays,  only: fv_grid_bounds_type, fv_grid_type, R_GRID
 use test_cases, only: calc_winds
 use tp_core,    only: fv_tp_1d
 use sw_core,    only: time_averaged_cfl
+use fv_duogrid, only: ext_scalar_agrid, ext_scalar_cgrid
+
 implicit none
 
 contains
@@ -43,12 +45,9 @@ subroutine dy_core(qa, uc, uc_old, bd, gridstruct, time, time_centered, dt, dto2
    call calc_winds(uc    , bd, gridstruct, time_centered, test_case)
 
    ! periodic BC
-   qa(isd:is-1) = qa(ie-ng+1:ie)
-   qa(ie+1:ied) = qa(is:is+ng-1)
-   uc(isd:is-1) = uc(ie-ng+1:ie)
-   uc(ie+2:ied) = uc(is+1:is+1+ng-1)
-   uc_old(isd:is-1) = uc_old(ie-ng+1:ie)
-   uc_old(ie+2:ied) = uc_old(is+1:is+1+ng-1)
+   call ext_scalar_agrid(qa, bd)
+   call ext_scalar_cgrid(uc, bd)
+   call ext_scalar_cgrid(uc_old, bd)
 
    ! compute time averaged cfl
    call time_averaged_cfl(gridstruct, bd, crx_adv, uc_old, uc, dp, dt)
