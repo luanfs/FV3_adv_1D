@@ -4,11 +4,11 @@ module tp_core
 !
 ! reference https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere/blob/main/model/tp_core.F90
 !========================================================================
-use fv_arrays, only: R_GRID
+use fv_arrays, only: fv_grid_type, fv_grid_bounds_type, R_GRID
  implicit none
 
  private
- public xppm
+ public fv_tp_1d
 
  real, parameter:: ppm_fac = 1.5   ! nonlinear scheme limiter: between 1 and 2
  real, parameter:: r3 = 1./3.
@@ -50,6 +50,38 @@ use fv_arrays, only: R_GRID
 !
 !-----------------------------------------------------------------------
 contains
+ subroutine fv_tp_1d(q, crx, npx, hord, fx, xfx, gridstruct, bd, lim_fac)
+   type(fv_grid_bounds_type), intent(IN) :: bd
+   integer, intent(in):: npx
+   integer, intent(in)::hord
+   real(R_GRID), intent(in)::  crx(bd%is:bd%ie+1)  !
+   real(R_GRID), intent(in)::  xfx(bd%is:bd%ie+1)  !
+   real(R_GRID), intent(inout):: q(bd%isd:bd%ied)  ! transported scalar
+   real(R_GRID), intent(out)::fx(bd%is:bd%ie+1 )    ! Flux in x ( E )
+
+   type(fv_grid_type), intent(IN), target :: gridstruct
+
+   real(R_GRID), intent(in):: lim_fac
+! optional Arguments:
+! Local:
+   real(R_GRID)   fx1(bd%is:bd%ie+1)
+   integer i, j
+
+   integer:: is, ie, js, je, isd, ied, jsd, jed
+
+   is  = bd%is
+   ie  = bd%ie
+   isd = bd%isd
+   ied = bd%ied
+
+   call  xppm(fx1, q, crx, hord, is, ie, isd, ied, bd%npx,  lim_fac)
+
+   do i=is,ie+1
+      fx(i) =  xfx(i) * fx1(i)
+   enddo
+
+
+ end subroutine fv_tp_1d
 
 subroutine xppm(flux, q, c, iord, is, ie, isd, ied, npx, lim_fac)
  integer, INTENT(IN) :: is, ie, isd, ied

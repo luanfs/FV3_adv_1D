@@ -40,10 +40,20 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
  
    agrid => gridstruct%agrid
 
-   if (test_case == 1 .or. test_case==2) then
+   if (test_case == 1) then
       do i = is, ie
          x = agrid(i)%x
-         qa(i) = dexp(-10*(dcos(pi*x))**2)
+         if (x<=0.4d0 .or. x>0.6d0) then
+            qa(i) = 0.d0
+         else
+            qa(i) = 1.d0
+         endif
+      enddo
+
+   else if (test_case == 2 .or. test_case==3) then
+      do i = is, ie
+         x = agrid(i)%x
+         qa(i) = 0.d0 + 1.d0* dexp(-10*(dcos(pi*x))**2)
       enddo
    else
 
@@ -101,10 +111,10 @@ subroutine compute_wind(uc, x, t, test_case)
    real(R_GRID) :: Tf, u0, u1
 
    select case (test_case)
-      case(1)
+      case(1,2)
          uc = 0.2d0
 
-      case(2)
+      case(3)
          Tf = 5
          u0 = 0.2
          u1 = 0.2
@@ -112,6 +122,7 @@ subroutine compute_wind(uc, x, t, test_case)
 
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
+         stop
    end select
 end subroutine compute_wind
 

@@ -68,7 +68,7 @@ subroutine init_atmos(atm)
    type(fv_atmos_type), intent(INOUT) :: atm
    integer :: is, ie, isd, ied
    integer :: i
-   character (len=60):: n, tc, hord
+   character (len=60):: n, tc, hord, dp
    is  = atm%bd%is
    isd = atm%bd%isd
    ie  = atm%bd%ie
@@ -78,8 +78,9 @@ subroutine init_atmos(atm)
    write(n   ,'(i8)') atm%npx
    write(tc  ,'(i8)') atm%test_case
    write(hord,'(i8)') atm%hord
+   write(dp  ,'(i8)') atm%dp
    atm%simulation_name = "tc"//trim(adjustl(tc))//"_N"//trim(adjustl(n))//"_hord"//&
-   trim(adjustl(hord))//"_"
+   trim(adjustl(hord))//"_dp"//trim(adjustl(dp))//"_"
 
    allocate(atm%qa(isd:ied))
    allocate(atm%qa0(isd:ied))

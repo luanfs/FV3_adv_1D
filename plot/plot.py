@@ -9,13 +9,14 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 48 # number of cells
-tc   = 2  # test case
+N    = 384 # number of cells
+tc   = 3  # test case
 hord = 8  # advection scheme
-nplots = 7
+dp   = 2  # departure point scheme
+nplots = 11
 
 # basename for plotting
-basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_t"
+basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_dp"+str(dp)+"_t"
 
 # x axis points for plotting
 x = np.linspace(0, 1, N)
@@ -40,17 +41,17 @@ for t in range(0, nplots+1):
    # plot the graph
    plt.plot(x,y)
 
-   if tc == 1:
-       plt.ylim(-0.1, 1.1)
-   elif tc == 2:
-      plt.ylim(-0.1, 2)
+   if tc == 1 or tc == 2:
+      plt.ylim(-0.1, 1.2)
+   elif tc == 3:
+      plt.ylim(-0.1, 2.2)
  
    # Label
    plt.xlabel('$x$')
    plt.ylabel('$y$')
    #plt.legend()
    plt.grid(True, which="both")
-   title = "N="+str(N)+", hord="+str(hord)+", time = "+time+" days"+\
+   title = "N="+str(N)+", hord="+str(hord)+", dp="+str(dp)+", time = "+time+" days"+\
    "\nCFL="+cfl+", mass variation="+massvar  
    plt.title(title)
    plt.savefig(output_name+'.'+figformat, format=figformat)

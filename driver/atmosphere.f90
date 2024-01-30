@@ -2,8 +2,8 @@ module atmosphere
 !========================================================================
 !========================================================================
 use fv_control, only: init_model
-use fv_arrays , only: fv_atmos_type, datadir, R_GRID
-use test_cases, only: init_case, calc_winds
+use fv_arrays , only: fv_atmos_type, datadir, pardir, R_GRID
+use test_cases, only: init_case
 use dyn_core  , only: dy_core
 
 implicit none
@@ -43,6 +43,9 @@ subroutine atmosphere_init(atm)
    type(fv_atmos_type), intent(inout) :: atm
    logical :: first_step=.true.
 
+   ! get parameters
+   call atmosphere_input(atm)
+
    ! initialize all variables
    call init_model(atm)
 
@@ -55,6 +58,8 @@ subroutine atmosphere_init(atm)
 
    ! cfl
    atm%cfl = maxval(abs(atm%uc0))*atm%dt/atm%gridstruct%dx
+   print*,"cfl        :", atm%cfl
+   print*,'------------------------------------------------------------------'
 
    ! update qa and uc
    atm%qa = atm%qa0
@@ -65,8 +70,6 @@ subroutine atmosphere_init(atm)
 
    ! plot IC
    call atmosphere_output(atm, 0, atm%total_tsteps)
-
-   first_step=.false.
 end subroutine atmosphere_init
 
 !--------------------------------------------------------------
@@ -79,15 +82,11 @@ subroutine atmosphere_timestep(atm)
 
    ! solves dynamics
    call dy_core(atm%qa, atm%uc, atm%uc_old, atm%bd, atm%gridstruct, atm%time, atm%time_centered,&
-                   atm%dt, atm%dto2, atm%test_case, atm%hord, atm%lim_fac)
+                   atm%dt, atm%dto2, atm%test_case, atm%hord, atm%lim_fac, atm%dp)
 
    ! update times
    atm%time          = atm%time + atm%dt
    atm%time_centered = atm%time + atm%dto2
-
-   ! winds for next timestep
-   call calc_winds(atm%uc_old, atm%bd, atm%gridstruct, atm%time         , atm%test_case)
-   call calc_winds(atm%uc    , atm%bd, atm%gridstruct, atm%time_centered, atm%test_case)
 
 end subroutine atmosphere_timestep
 
@@ -106,11 +105,12 @@ subroutine atmosphere_output(atm, step, total_tsteps)
    ie = atm%bd%ie
 
    
-   if(step==0 .or. step==total_tsteps .or. mod(step,10)==0 )then
+   if(step==0 .or. step==total_tsteps .or. mod(step,atm%plotstep)==0 )then
       write(nplot, '(i8)') atm%nplot
       filename = trim(datadir)//trim(atm%simulation_name)//"t"//trim(adjustl(nplot))//".txt"
       print*, 'saving ', filename
-      ! write the data in a text file
+
+      ! write the q data in a text file
       iunit = 19
       open(iunit, file=filename, status='replace')
       write(iunit,*) atm%time
@@ -121,6 +121,7 @@ subroutine atmosphere_output(atm, step, total_tsteps)
       end do
       close(iunit)
       atm%nplot = atm%nplot + 1
+
    endif
 end subroutine atmosphere_output
 
@@ -148,6 +149,8 @@ end subroutine atmosphere_diag
 !--------------------------------------------------------------
 subroutine atmosphere_end(atm)
    type(fv_atmos_type), intent(inout) :: atm
+   integer :: i, iunit 
+   character (len=60):: filename
    integer :: is, ie
    is = atm%bd%is
    ie = atm%bd%ie
@@ -158,8 +161,71 @@ subroutine atmosphere_end(atm)
    atm%l1_error_qa     = sum   (atm%error_qa(is:ie))/sum   (abs(atm%qa0(is:ie)))
    atm%l2_error_qa     = norm2 (atm%error_qa(is:ie))/norm2 (abs(atm%qa0(is:ie)))
 
-   print*, atm%linf_error_qa, atm%l1_error_qa, atm%l2_error_qa
+   filename = trim(datadir)//trim(atm%simulation_name)//"errors.txt"
+   print*, 'saving ', filename
+   iunit = 12
+   open(iunit, file=filename, status='replace')
+   write(iunit,*) atm%linf_error_qa
+   write(iunit,*) atm%l1_error_qa
+   write(iunit,*) atm%l2_error_qa
+   close(iunit)
+
+   print*, atm%linf_error_qa, atm%l1_error_qa, atm%l2_error_qa, atm%cfl
+   print*,'------------------------------------------------------------------'
 end subroutine atmosphere_end
 
+subroutine atmosphere_input(atm)
+    !---------------------------------------------------
+    ! read parameters from file par/input.par
+    !--------------------------------------------------
+    type(fv_atmos_type), intent(inout):: atm
+    character (len=60):: filename
+    character (len=300):: buffer
+    integer :: fileunit
+    integer:: i
+    integer:: n
+
+    !Standard advection parameters file
+    filename=trim(pardir)//"input.par"
+
+    print*,"Input parameters: ", trim(filename)
+    print*
+    fileunit = 7
+    !A parameters file must exist 
+    open(fileunit,file=filename,status='old')
+
+    read(fileunit,*)  buffer
+    read(fileunit,*)  buffer
+    read(fileunit,*)  atm%test_case
+    read(fileunit,*)  buffer
+    read(fileunit,*)  atm%npx
+    read(fileunit,*)  buffer
+    read(fileunit,*)  atm%dt
+    read(fileunit,*)  buffer
+    read(fileunit,*)  atm%hord
+    read(fileunit,*)  buffer
+    read(fileunit,*)  atm%dp
+    read(fileunit,*)  buffer
+    read(fileunit,*)  atm%nplots
+    close(fileunit)
+
+    print*,"test case  :", atm%test_case
+    print*,"npx        :", atm%npx
+    print*,"dt         :", atm%dt
+    print*,"hord       :", atm%hord
+    print*,"dp         :", atm%dp
+    print*,"nplots     :", atm%nplots
+
+    ! Time vars
+    atm%Tf   = 5.d0
+    atm%dto2 = atm%dt*0.5d0
+    atm%total_tsteps  = int(atm%Tf/atm%dt)
+    atm%plotstep = atm%total_tsteps/atm%nplots
+    ! Readjust time step
+    atm%dt  = atm%Tf/atm%total_tsteps
+
+    print*,"adjusted dt:", atm%dt
+    return
+end subroutine atmosphere_input
 
 end module atmosphere

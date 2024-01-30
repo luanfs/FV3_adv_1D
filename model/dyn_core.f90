@@ -6,11 +6,12 @@ module dyn_core
 !========================================================================
 use fv_arrays,  only: fv_grid_bounds_type, fv_grid_type, R_GRID
 use test_cases, only: calc_winds
-use tp_core,    only: xppm
+use tp_core,    only: fv_tp_1d
+use sw_core,    only: time_averaged_cfl
 implicit none
 
 contains
-subroutine dy_core(qa, uc, uc_old, bd, gridstruct, time, time_centered, dt, dto2, test_case, hord, lim_fac)
+subroutine dy_core(qa, uc, uc_old, bd, gridstruct, time, time_centered, dt, dto2, test_case, hord, lim_fac, dp)
    type(fv_grid_bounds_type), intent(INOUT) :: bd
    type(fv_grid_type), target, intent(INOUT) :: gridstruct
    real(R_GRID), intent(in) :: time, dt, dto2
@@ -21,10 +22,11 @@ subroutine dy_core(qa, uc, uc_old, bd, gridstruct, time, time_centered, dt, dto2
    real(R_GRID), intent(inout) :: uc_old(bd%isd:bd%ied)
    integer, intent(IN) :: test_case
    integer, intent(IN) :: hord
+   integer, intent(IN) :: dp
 
    real(R_GRID), pointer :: dx
    real(R_GRID) :: xfx_adv(bd%is:bd%ie+1)
-   real(R_GRID) :: cx(bd%is:bd%ie+1)
+   real(R_GRID) :: crx_adv(bd%is:bd%ie+1)
    real(R_GRID) :: flux(bd%is:bd%ie+1)
    integer :: is, ie, isd, ied, ng
    integer :: i
@@ -36,18 +38,28 @@ subroutine dy_core(qa, uc, uc_old, bd, gridstruct, time, time_centered, dt, dto2
    ng  = bd%ng
    dx  => gridstruct%dx
 
+   ! winds
+   call calc_winds(uc_old, bd, gridstruct, time         , test_case)
+   call calc_winds(uc    , bd, gridstruct, time_centered, test_case)
+
    ! periodic BC
    qa(isd:is-1) = qa(ie-ng+1:ie)
    qa(ie+1:ied) = qa(is:is+ng-1)
+   uc(isd:is-1) = uc(ie-ng+1:ie)
+   uc(ie+2:ied) = uc(is+1:is+1+ng-1)
+   uc_old(isd:is-1) = uc_old(ie-ng+1:ie)
+   uc_old(ie+2:ied) = uc_old(is+1:is+1+ng-1)
+
+   call time_averaged_cfl(gridstruct, bd, crx_adv, uc_old, uc, dp, dt)
 
    ! compute adv coeffs
-   cx(is:ie+1) = uc(is:ie+1)*dt/dx
-   xfx_adv(is:ie+1)= cx(is:ie+1)
+   xfx_adv(is:ie+1)= crx_adv(is:ie+1)
 
-   call  xppm(flux, qa, cx, hord, is, ie, isd, ied, bd%npx,  lim_fac)
+   !call  xppm(flux, qa, crx_adv, hord, is, ie, isd, ied, bd%npx,  lim_fac)
+   call fv_tp_1d(qa, crx_adv, bd%npx, hord, flux, xfx_adv, gridstruct, bd, lim_fac)
 
    ! update scalar field
-   qa(is:ie) = qa(is:ie) - (cx(is+1:ie+1)*flux(is+1:ie+1)-cx(is:ie)*flux(is:ie))
+   qa(is:ie) = qa(is:ie) - (flux(is+1:ie+1)-flux(is:ie))
 end subroutine dy_core
 
 end module dyn_core 

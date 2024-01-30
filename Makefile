@@ -14,6 +14,7 @@ OBJ=bin/fv_arrays.obj \
 bin/fv_control.obj \
 bin/test_cases.obj \
 bin/tp_core.obj \
+bin/sw_core.obj \
 bin/dyn_core.obj \
 bin/atmosphere.obj \
 
@@ -57,6 +58,15 @@ bin/tp_core.obj: model/tp_core.f90
 	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
 	mv tp_core.mod bin/.
 
+#sw_core
+bin/sw_core.obj: model/sw_core.f90
+	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
+	mv sw_core.mod bin/.
+
+#dyn_core
+bin/dyn_core.obj: model/dyn_core.f90
+	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)
+	mv dyn_core.mod bin/.
 #dyn_core
 bin/dyn_core.obj: model/dyn_core.f90
 	$(F90) $(FFLAG) -c  $^ -o $@ $(IMOD)

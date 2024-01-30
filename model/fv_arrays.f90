@@ -10,6 +10,7 @@ integer, public, parameter :: R_GRID = selected_real_kind(12,100)
 real(R_GRID), public, parameter :: pio4 = datan(1.d0)
 real(R_GRID), public, parameter :: pi = 4.d0*pio4
 character(len=32) :: datadir = "data/"
+character(len=32) :: pardir = "par/"
 
 !-----------------------------------------------------------------------------
 ! domain bounds
@@ -26,13 +27,13 @@ end type fv_grid_bounds_type
 !-------------------------------------------------
 type point_structure
    ! Cartesian coordinates (R^2)
-   real(kind=R_GRID), dimension(1:2) :: p
+   !real(kind=R_GRID), dimension(1:2) :: p
 
    ! Local square circle coordinate
    real(kind=R_GRID) :: x
 
    ! Polar coordinates in radians ([-pi, pi[)
-   real(kind=R_GRID) :: theta
+   !real(kind=R_GRID) :: theta
 end type point_structure
 
 !-------------------------------------------------
@@ -54,7 +55,10 @@ type fv_atmos_type
    type(fv_grid_bounds_type) :: bd
    integer  :: test_case
    integer  :: hord
+   integer  :: dp
    integer  :: nplot = 0
+   integer  :: nplots
+   integer  :: plotstep
    real(R_GRID) :: lim_fac = 1.d0
 
    ! time vars
