@@ -18,7 +18,7 @@ program = "./main"
 tc = 3
 
 # advection scheme
-hords = (8, 8, 9, 9)
+hords = (8, 8, 5, 5)
 
 # departure point scheme
 dps = (1, 2, 1, 2)

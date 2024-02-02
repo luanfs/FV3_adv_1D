@@ -20,14 +20,6 @@ else
     echo "Output data files will be put inside        data/"
 fi
 
-if [ -d grid ] ; then
-    echo "Grid structure files will be put inside     grid/"
-else
-    mkdir grid
-    echo "Directory 'grid' created" 
-    echo "Grid structure files will be put inside     grid/"
-fi
-
 if [ -d par ] ; then
     echo "Parameters files are, or should be, inside  par/"
 else
