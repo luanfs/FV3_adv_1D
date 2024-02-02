@@ -136,9 +136,9 @@ subroutine atmosphere_diag(atm, first_step)
    ie = atm%bd%ie
 
    if(first_step) then
-      atm%mass_qa0 = sum(abs(atm%qa0(is:ie)))*atm%gridstruct%dx
+      atm%mass_qa0 = sum(atm%qa0(is:ie))*atm%gridstruct%dx
    else
-      atm%mass_qa     = sum(abs(atm%qa(is:ie)))*atm%gridstruct%dx
+      atm%mass_qa     = sum(atm%qa(is:ie))*atm%gridstruct%dx
       atm%mass_qa_var = (atm%mass_qa0-atm%mass_qa)/atm%mass_qa0
    endif
 end subroutine atmosphere_diag

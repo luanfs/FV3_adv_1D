@@ -11,7 +11,7 @@ figformat = 'png'
 # some constants
 N    = 48 # number of cells
 tc   = 3  # test case
-hords = (3,5)  # advection schemes
+hords = (5,8)  # advection schemes
 dps   = (1,)  # departure point schemes
 nplots = 13
 

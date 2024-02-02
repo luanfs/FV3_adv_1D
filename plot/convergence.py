@@ -37,7 +37,7 @@ else:
   exit()
 
 # number of grids
-ngrids = 6
+ngrids = 5
 
 # aux routine
 def replace_line(filename, content, line_number):
