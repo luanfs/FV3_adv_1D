@@ -18,7 +18,7 @@ program = "./main"
 tc = 3
 
 # advection scheme
-hords = (8, 8, 5, 5)
+hords = (8, 8, 0, 0)
 
 # departure point scheme
 dps = (1, 2, 1, 2)
@@ -37,7 +37,7 @@ else:
   exit()
 
 # number of grids
-ngrids = 5
+ngrids = 6
 
 # aux routine
 def replace_line(filename, content, line_number):

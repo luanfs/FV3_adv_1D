@@ -120,7 +120,26 @@ subroutine xppm(flux, q, c, iord, is, ie, isd, ied, npx, lim_fac)
        q1(i) = q(i)
     enddo
 
- if ( iord < 7 ) then
+ if (iord==0) then
+   do i=is1, ie3
+      al(i) = p1*(q1(i-1)+q1(i)) + p2*(q1(i-2)+q1(i+1))
+   enddo
+
+   do i=is1, ie1
+      bl(i) =  al(i)-q1(i)
+      br(i) =  al(i+1)-q1(i)
+   enddo
+
+   do i=is,ie+1
+      if( c(i)>0. ) then
+          flux(i) = q1(i-1) + (1.-c(i))*(br(i-1)-c(i)*(bl(i-1)+br(i-1)))
+      else
+          flux(i) = q1(i  ) + (1.+c(i))*(bl(i  )+c(i)*(bl(i)+br(i)))
+      endif
+   enddo
+   
+   
+ else if ( iord < 7 ) then
 ! ord = 2: perfectly linear ppm scheme
 ! Diffusivity: ord2 < ord5 < ord3 < ord4 < ord6
 
