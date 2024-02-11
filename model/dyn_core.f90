@@ -20,8 +20,8 @@ subroutine dy_core(qa, uc, uc_old, bd, gridstruct, time, time_centered, dt, dto2
    real(R_GRID), intent(in) :: time_centered
    real(R_GRID), intent(inout) :: lim_fac
    real(R_GRID), intent(inout) :: qa(bd%isd:bd%ied)
-   real(R_GRID), intent(inout) :: uc(bd%isd:bd%ied)
-   real(R_GRID), intent(inout) :: uc_old(bd%isd:bd%ied)
+   real(R_GRID), intent(inout) :: uc(bd%isd:bd%ied+1)
+   real(R_GRID), intent(inout) :: uc_old(bd%isd:bd%ied+1)
    integer, intent(IN) :: test_case
    integer, intent(IN) :: hord
    integer, intent(IN) :: dp
