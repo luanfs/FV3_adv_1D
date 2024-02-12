@@ -9,11 +9,11 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 768 # number of cells
+N    = 768	 # number of cells
 tc   = 3  # test case
-hords = (8,0)  # advection schemes
+hords = (8,)  # advection schemes
 dps   = (1,)  # departure point schemes
-nplots = 12
+nplots = 15
 
 # domain length
 erad = 6371.0 # earth radius (km)
@@ -33,7 +33,7 @@ for t in range(0, nplots+1):
       # basename for plotting
       basename = "tc"+str(tc)+"_N"+str(N)+"_hord"+str(hord)+"_dp"+str(dp)+"_t"
       input_name  = datadir+basename+str(t)+'.txt'
-      output_name = graphdir+basename+str(t)+'.'+figformat
+      output_name = graphdir+'adv1d_'+basename+str(t)+'.'+figformat
 
       data = np.loadtxt(input_name)
 
@@ -64,9 +64,9 @@ for t in range(0, nplots+1):
    plt.ylabel('$y$')
    plt.legend()
    plt.grid(True, which="both")
-   title = "N="+str(N)+", time = "+time+" days, CFL="+cfl+", mass variation="+massvar  
+   title = "N="+str(N)+", time = "+time+" days, CFL="+cfl#+", mass variation="+massvar  
    plt.title(title)
-   plt.savefig(output_name+'.'+figformat, format=figformat)
+   plt.savefig(output_name, format=figformat)
    plt.close()
    print("Plotted "+ output_name)
    

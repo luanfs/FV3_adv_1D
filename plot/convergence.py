@@ -29,9 +29,9 @@ Ns=[]
 
 # time step for N
 if tc==1 or tc==2:
-  dt = 14400
+  dt = 20000
 elif tc==3:
-  dt = 7200
+  dt = 10000
 else:
   print('invalid TC')
   exit()
@@ -129,11 +129,11 @@ for e in range(0, len(errors)):
    order3 = [eref, eref/8.0]
    plt.loglog(Ns[ngrids-2:ngrids], order1, '-' , color='black', label = '1st order')
    plt.loglog(Ns[ngrids-2:ngrids], order2, '--', color='black', label = '2nd order')
-   plt.loglog(Ns[ngrids-2:ngrids], order3, '-.' , color='black', label = '3rd order')
+   plt.loglog(Ns[ngrids-2:ngrids], order3, '-.', color='black', label = '3rd order')
 
    # Label
    title =names[e]+" error - TC"+str(tc)
-   figname =  graphdir+'tc'+str(tc)+'_'+enames[e]+"_error"
+   figname =  graphdir+'adv1d_tc'+str(tc)+'_'+enames[e]+"_error"
    plt.xlabel('$N$')
    plt.ylabel('Error')
    plt.xlim(0,1000)

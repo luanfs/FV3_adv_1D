@@ -6,7 +6,7 @@ module test_cases
 ! https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere/blob/main/tools/test_cases.F90
 !========================================================================
 use fv_arrays,  only: fv_grid_bounds_type, fv_grid_type, fv_atmos_type, &
-                      point_structure, R_GRID, pi, erad, eradi, day2sec
+                      point_structure, R_GRID, pi, twopi, erad, eradi, day2sec
 implicit none
 
 contains
@@ -30,7 +30,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
    type(fv_grid_bounds_type), intent(IN) :: bd
    type(point_structure), pointer, dimension(:) :: agrid
    real(R_GRID), intent(OUT) :: qa(bd%isd:bd%ied)
-   real(R_GRID) :: x, c
+   real(R_GRID) :: x, c, L
    integer, intent(IN) :: test_case
    integer :: is, ie
    integer :: i
@@ -52,9 +52,10 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
       enddo
 
    else if (test_case==2 .or. test_case==3) then
+      L = twopi*erad
       do i = is, ie
          x = agrid(i)%x
-         qa(i) = 0.d0 + 1.d0* dexp(-10*(dcos(x*0.5d0*eradi))**2)
+         qa(i) = 0.d0 + 1.d0* dexp(-10*(dcos(pi*x/L))**2)
       enddo
    else
 
@@ -109,7 +110,7 @@ subroutine compute_wind(uc, x, t, test_case)
    real(R_GRID), intent(OUT) :: uc
    real(R_GRID), intent(IN)  :: x, t
    integer, intent(IN) :: test_case
-   real(R_GRID) :: Tf, u0, u1, x1, c
+   real(R_GRID) :: Tf, u0, u1, x1, c, L
 
    Tf = 12.d0*day2sec
    select case (test_case)
@@ -117,11 +118,11 @@ subroutine compute_wind(uc, x, t, test_case)
          uc = 2d0*pi*erad/Tf
 
       case(3)
-         c = 2d0*pi*erad/Tf
+         L = twopi*erad
+         c = L/Tf
          u0 = c
          u1 = c
-         x1 = x/(2d0*pi*erad)
-         uc = u0*dsin(pi*(x1-t/Tf))**2*dcos(pi*t/Tf) + u1
+         uc = u0*dsin(pi*(x/L-t/Tf))**2*dcos(pi*t/Tf) + u1
 
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
