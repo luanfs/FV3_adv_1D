@@ -29,15 +29,15 @@ Ns=[]
 
 # time step for N
 if tc==1 or tc==2:
-  dt = 14400
+  dt = 18000
 elif tc==3:
-  dt = 7200
+  dt = 9000
 else:
   print('invalid TC')
   exit()
 
 # number of grids
-ngrids = 6
+ngrids = 5
 
 # aux routine
 def replace_line(filename, content, line_number):
@@ -122,11 +122,21 @@ for e in range(0, len(errors)):
       plt.loglog(Ns, error[:,m], lines_style[m], color=colors[m], marker=markers[m],\
       label = 'hord'+str(hord)+'-dp'+str(dp)+" - order "+CR)
 
+   # plot reference lines
+   eref = 100*np.amin(error)
+   order1 = [eref, eref/2.0]
+   order2 = [eref, eref/4.0]
+   order3 = [eref, eref/8.0]
+   plt.loglog(Ns[ngrids-2:ngrids], order1, '-' , color='black', label = '1st order')
+   plt.loglog(Ns[ngrids-2:ngrids], order2, '--', color='black', label = '2nd order')
+   plt.loglog(Ns[ngrids-2:ngrids], order3, '-.' , color='black', label = '3rd order')
+
    # Label
    title =names[e]+" error - TC"+str(tc)
    figname =  graphdir+'tc'+str(tc)+'_'+enames[e]+"_error"
    plt.xlabel('$N$')
    plt.ylabel('Error')
+   plt.xlim(0,1000)
    plt.title(title)
    plt.legend()
    plt.grid(True, which="both")
