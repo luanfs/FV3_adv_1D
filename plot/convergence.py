@@ -29,9 +29,9 @@ Ns=[]
 
 # time step for N
 if tc==1 or tc==2:
-  dt = 18000
+  dt = 14400
 elif tc==3:
-  dt = 9000
+  dt = 7200
 else:
   print('invalid TC')
   exit()

@@ -9,18 +9,23 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 48 # number of cells
+N    = 768 # number of cells
 tc   = 3  # test case
-hords = (5,8)  # advection schemes
+hords = (8,0)  # advection schemes
 dps   = (1,)  # departure point schemes
-nplots = 13
+nplots = 12
 
-
+# domain length
+erad = 6371.0 # earth radius (km)
+Lx = 2*np.pi*erad
 
 # x axis points for plotting
-x = np.linspace(0, 1, N)
+x = np.linspace(0, Lx, N)
 
 for t in range(0, nplots+1):
+   if t>0:
+       # plot ic
+       plt.plot(x, y0, color = 'black', label = 'IC')
    for m in range(0, len(dps)):
       dp = dps[m]
       hord = hords[m]
@@ -53,11 +58,9 @@ for t in range(0, nplots+1):
  
    if t == 0:
       y0 = y
-   # plot ic
-   plt.plot(x, y0, color = 'black', label = 'IC')
 
    # Label
-   plt.xlabel('$x$')
+   plt.xlabel('$x$ (km)')
    plt.ylabel('$y$')
    plt.legend()
    plt.grid(True, which="both")
