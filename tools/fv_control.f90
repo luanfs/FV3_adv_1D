@@ -6,7 +6,7 @@ module fv_control
 ! https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere/blob/main/tools/fv_control.F90
 !========================================================================
 use fv_arrays,  only: fv_grid_bounds_type, fv_grid_type, fv_atmos_type, &
-                      point_structure, R_GRID, erad, pi
+                      point_structure, R_GRID, erad, pi, pio2
 implicit none
 
 contains
@@ -34,6 +34,7 @@ subroutine init_grid(gridstruct, bd)
    type(point_structure), pointer, dimension(:) :: agrid
    type(point_structure), pointer, dimension(:) :: cgrid
    real(R_GRID), pointer :: dx
+   real(R_GRID) :: L
    integer :: is, ie, isd, ied
    integer :: i
 
@@ -50,11 +51,12 @@ subroutine init_grid(gridstruct, bd)
    cgrid => gridstruct%cgrid
    dx    => gridstruct%dx
 
-   dx = 2.d0*pi*erad/bd%npx
+   L = pio2*erad
+   dx = L/bd%npx
    
    ! compute c grid local coordinates
    do i = isd, ied+1
-      cgrid(i)%x = 0.d0 + (i-1d0)*dx
+      cgrid(i)%x = -L*0.5d0 + (i-1d0)*dx
    enddo
 
    ! compute a grid local coordinates

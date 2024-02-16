@@ -9,18 +9,19 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 768	 # number of cells
-tc   = 3  # test case
-hords = (8,)  # advection schemes
-dps   = (1,)  # departure point schemes
-nplots = 15
+N    = 48	 # number of cells
+tc   = 1  # test case
+hords = (8,0)  # advection schemes
+dps   = (1,1)  # departure point schemes
+nplots = 13
 
 # domain length
 erad = 6371.0 # earth radius (km)
-Lx = 2*np.pi*erad
-
+Lx = 0.5*np.pi*erad
+Lxo2 = Lx*0.5
+ 
 # x axis points for plotting
-x = np.linspace(0, Lx, N)
+x = np.linspace(-Lxo2, Lxo2, N)
 
 for t in range(0, nplots+1):
    if t>0:
@@ -52,7 +53,7 @@ for t in range(0, nplots+1):
 
 
    if tc == 1 or tc == 2:
-      plt.ylim(-0.1, 1.2)
+      plt.ylim(-0.2, 1.2)
    elif tc == 3:
       plt.ylim(-0.1, 2.2)
  

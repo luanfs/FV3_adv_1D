@@ -9,6 +9,7 @@ public
 integer, public, parameter :: R_GRID = selected_real_kind(12,100)
 real(R_GRID), public, parameter :: pio4 = datan(1.d0)
 real(R_GRID), public, parameter :: pi = 4.d0*pio4
+real(R_GRID), public, parameter :: pio2 = 2.d0*pio4
 real(R_GRID), public, parameter :: twopi = 2.d0*pi
 real(R_GRID), public, parameter :: erad = 6.37122e6
 real(R_GRID), public, parameter :: eradi = 1.d0/erad

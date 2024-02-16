@@ -6,7 +6,7 @@ module test_cases
 ! https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere/blob/main/tools/test_cases.F90
 !========================================================================
 use fv_arrays,  only: fv_grid_bounds_type, fv_grid_type, fv_atmos_type, &
-                      point_structure, R_GRID, pi, twopi, erad, eradi, day2sec
+                      point_structure, R_GRID, pi, twopi, erad, eradi, pio2, day2sec
 implicit none
 
 contains
@@ -41,10 +41,10 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
    agrid => gridstruct%agrid
 
    if (test_case==1) then
+      L = pio2*erad
       do i = is, ie
          x = agrid(i)%x
-         c = 2d0*pi*erad
-         if (x<=0.4*c .or. x>=0.6d0*c) then
+         if (x<=-L*0.1d0 .or. x>=L*0.1d0) then
             qa(i) = 0.d0
          else
             qa(i) = 1.d0
@@ -52,10 +52,10 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
       enddo
 
    else if (test_case==2 .or. test_case==3) then
-      L = twopi*erad
+      L = pio2*erad
       do i = is, ie
          x = agrid(i)%x
-         qa(i) = 0.d0 + 1.d0* dexp(-10*(dcos(pi*x/L))**2)
+         qa(i) = 0.d0 + 1.d0* dexp(-10*(dsin(pi*x/L))**2)
       enddo
    else
 
@@ -113,16 +113,16 @@ subroutine compute_wind(uc, x, t, test_case)
    real(R_GRID) :: Tf, u0, u1, x1, c, L
 
    Tf = 12.d0*day2sec
+   L = pio2*erad
    select case (test_case)
       case(1,2)
-         uc = 2d0*pi*erad/Tf
+         uc = L/Tf
 
       case(3)
-         L = twopi*erad
          c = L/Tf
          u0 = c
          u1 = c
-         uc = u0*dsin(pi*(x/L-t/Tf))**2*dcos(pi*t/Tf) + u1
+         uc = u0*dcos(pi*(x/L-t/Tf))**2*dcos(pi*t/Tf) + u1
 
       case default
          print*, 'error in compute_wind: invalid testcase, ', test_case
