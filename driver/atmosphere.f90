@@ -108,7 +108,6 @@ subroutine atmosphere_output(atm, step, total_tsteps)
    if(step==0 .or. step==total_tsteps .or. mod(step,atm%plotstep)==0 )then
       write(nplot, '(i8)') atm%nplot
       filename = trim(datadir)//trim(atm%simulation_name)//"t"//trim(adjustl(nplot))//".txt"
-      print*, 'saving ', filename
 
       ! write the q data in a text file
       iunit = 19
@@ -116,9 +115,16 @@ subroutine atmosphere_output(atm, step, total_tsteps)
       write(iunit,*) atm%time*sec2day
       write(iunit,*) atm%mass_qa_var
       write(iunit,*) atm%cfl
-      do i = is, ie
-         write(iunit,*) atm%qa(i)
-      end do
+      close(iunit)
+
+      ! save scalar field in binary format
+      iunit = 11
+      filename = trim(datadir)//trim(atm%simulation_name)//"t"//trim(adjustl(nplot))//".dat"
+      print*, 'saving ', filename
+
+      !Write whole block to file (much faster)
+      open(iunit, file=filename, status='replace', access='stream', form='unformatted')
+      write(iunit) atm%qa(is:ie)
       close(iunit)
       atm%nplot = atm%nplot + 1
 

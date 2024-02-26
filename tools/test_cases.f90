@@ -45,7 +45,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
       do i = is, ie
          x = agrid(i)%x
          if (x<=-L*0.1d0 .or. x>=L*0.1d0) then
-            qa(i) = 0.d0
+            qa(i) = 0.1d0
          else
             qa(i) = 1.d0
          endif
@@ -55,7 +55,7 @@ subroutine init_scalar(qa, bd, gridstruct, test_case)
       L = pio2*erad
       do i = is, ie
          x = agrid(i)%x
-         qa(i) = 0.d0 + 1.d0* dexp(-10*(dsin(pi*x/L))**2)
+         qa(i) = 0.1d0 + 0.9d0* dexp(-10*(dsin(pi*x/L))**2)
       enddo
    else
 

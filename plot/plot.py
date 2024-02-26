@@ -9,10 +9,10 @@ datadir  ='../data/' # must exist
 figformat = 'png'
 
 # some constants
-N    = 48	 # number of cells
-tc   = 1  # test case
-hords = (8,0)  # advection schemes
-dps   = (1,1)  # departure point schemes
+N    = 768	 # number of cells
+tc   = 3  # test case
+hords = (8,)  # advection schemes
+dps   = (1,)  # departure point schemes
 nplots = 13
 
 # domain length
@@ -36,24 +36,28 @@ for t in range(0, nplots+1):
       input_name  = datadir+basename+str(t)+'.txt'
       output_name = graphdir+'adv1d_'+basename+str(t)+'.'+figformat
 
-      data = np.loadtxt(input_name)
+      data_info = np.loadtxt(input_name)
+
+      # get binary data
+      input_name_bin  = datadir+basename+str(t)+'.dat'
+      y = open(input_name_bin, 'rb')
+      y = np.fromfile(y, dtype=np.float64)
 
       # plot the graph
-      y = data[3:]
       plt.plot(x, y, label = 'hord'+str(hord)+'.dp'+str(dp))
 
-   time = data[0]
+   time = data_info[0]
    time = str("{:.2e}".format(time))
 
-   massvar = data[1]
+   massvar = data_info[1]
    massvar = str("{:.2e}".format(massvar))
 
-   cfl = data[2]
+   cfl = data_info[2]
    cfl = str("{:.2e}".format(cfl))
 
 
    if tc == 1 or tc == 2:
-      plt.ylim(-0.2, 1.2)
+      plt.ylim(0.0, 1.2)
    elif tc == 3:
       plt.ylim(-0.1, 2.2)
  
